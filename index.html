@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Conversor CLT → PJ | Quanto pedir como PJ?</title>
+    <meta
+      name="description"
+      content="Calcule quanto você precisa ganhar como PJ para equivaler ao seu salário CLT. Inclui INSS, FGTS, férias, 13º e impostos."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0e0e0e;
+        --surface: #161616;
+        --surface2: #1f1f1f;
+        --border: #2a2a2a;
+        --accent: #c8f04a;
+        --accent2: #f0e04a;
+        --text: #f0f0f0;
+        --muted: #888;
+        --danger: #ff5c5c;
+        --green: #4af09a;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: "IBM Plex Mono", monospace;
+        min-height: 100vh;
+        padding: 0 16px 80px;
+        overflow-x: hidden;
+      }
+
+      /* GRID NOISE */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(200, 240, 74, 0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(200, 240, 74, 0.03) 1px, transparent 1px);
+        background-size: 40px 40px;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .wrap {
+        max-width: 680px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+      }
+
+      header {
+        padding: 48px 0 32px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 40px;
+      }
+
+      .eyebrow {
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        color: var(--accent);
+        text-transform: uppercase;
+        margin-bottom: 12px;
+      }
+
+      h1 {
+        font-family: "Syne", sans-serif;
+        font-size: clamp(32px, 7vw, 52px);
+        font-weight: 800;
+        line-height: 1.05;
+        letter-spacing: -1px;
+      }
+
+      h1 span {
+        color: var(--accent);
+      }
+
+      .subtitle {
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      /* FORM */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 2px;
+        padding: 28px;
+        margin-bottom: 20px;
+      }
+
+      .card-title {
+        font-family: "Syne", sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 20px;
+      }
+
+      .field {
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+
+      .input-wrap {
+        position: relative;
+      }
+
+      .prefix {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--accent);
+        font-size: 14px;
+        font-weight: 600;
+        pointer-events: none;
+      }
+
+      input[type="number"],
+      input[type="text"] {
+        width: 100%;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 2px;
+        color: var(--text);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 16px;
+        padding: 12px 14px 12px 36px;
+        outline: none;
+        transition: border-color 0.2s;
+        -moz-appearance: textfield;
+      }
+
+      input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+      }
+
+      input[type="number"]:focus {
+        border-color: var(--accent);
+      }
+
+      .toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .toggle-row:last-child {
+        border-bottom: none;
+      }
+
+      .toggle-label {
+        font-size: 12px;
+        color: var(--text);
+      }
+
+      .toggle-hint {
+        font-size: 10px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+
+      .toggle {
+        position: relative;
+        width: 40px;
+        height: 22px;
+        flex-shrink: 0;
+        margin-left: 16px;
+      }
+
+      .toggle input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        transition: 0.2s;
+      }
+
+      .slider::before {
+        content: "";
+        position: absolute;
+        height: 14px;
+        width: 14px;
+        left: 3px;
+        bottom: 3px;
+        background: var(--muted);
+        border-radius: 50%;
+        transition: 0.2s;
+      }
+
+      .toggle input:checked + .slider {
+        background: var(--accent);
+        border-color: var(--accent);
+      }
+
+      .toggle input:checked + .slider::before {
+        transform: translateX(18px);
+        background: #000;
+      }
+
+      /* BTN */
+      .btn {
+        width: 100%;
+        background: var(--accent);
+        color: #000;
+        border: none;
+        border-radius: 2px;
+        font-family: "Syne", sans-serif;
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        padding: 16px;
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          transform 0.1s;
+        text-transform: uppercase;
+      }
+
+      .btn:hover {
+        background: #d8ff55;
+      }
+      .btn:active {
+        transform: scale(0.99);
+      }
+
+      /* RESULTS */
+      #results {
+        display: none;
+        animation: fadeUp 0.4s ease;
+      }
+
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .result-hero {
+        background: var(--accent);
+        color: #000;
+        border-radius: 2px;
+        padding: 32px 28px;
+        margin-bottom: 20px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .result-hero::after {
+        content: "PJ";
+        position: absolute;
+        right: -10px;
+        bottom: -20px;
+        font-family: "Syne", sans-serif;
+        font-size: 120px;
+        font-weight: 800;
+        opacity: 0.08;
+        line-height: 1;
+      }
+
+      .result-hero .label {
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        font-weight: 600;
+        opacity: 0.7;
+      }
+
+      .result-hero .amount {
+        font-family: "Syne", sans-serif;
+        font-size: clamp(36px, 8vw, 56px);
+        font-weight: 800;
+        line-height: 1.1;
+        margin: 6px 0;
+      }
+
+      .result-hero .per {
+        font-size: 12px;
+        opacity: 0.6;
+      }
+
+      .breakdown {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 2px;
+        overflow: hidden;
+        margin-bottom: 20px;
+      }
+
+      .breakdown-title {
+        padding: 14px 20px;
+        font-size: 11px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--muted);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .breakdown-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        border-bottom: 1px solid var(--border);
+        font-size: 13px;
+      }
+
+      .breakdown-row:last-child {
+        border-bottom: none;
+      }
+
+      .breakdown-row .name {
+        color: var(--muted);
+      }
+      .breakdown-row .val {
+        color: var(--text);
+        font-weight: 600;
+      }
+      .breakdown-row .val.pos {
+        color: var(--green);
+      }
+      .breakdown-row .val.neg {
+        color: var(--danger);
+      }
+
+      .breakdown-row.total {
+        background: var(--surface2);
+        font-family: "Syne", sans-serif;
+        font-weight: 700;
+      }
+
+      .breakdown-row.total .name {
+        color: var(--text);
+      }
+
+      .note {
+        font-size: 11px;
+        color: var(--muted);
+        line-height: 1.6;
+        padding: 16px 0;
+        border-top: 1px solid var(--border);
+        margin-top: 8px;
+      }
+
+      /* AD PLACEHOLDER */
+      .ad-slot {
+        background: var(--surface);
+        border: 1px dashed var(--border);
+        border-radius: 2px;
+        height: 90px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin: 24px 0;
+      }
+
+      footer {
+        text-align: center;
+        color: var(--muted);
+        font-size: 11px;
+        padding-top: 40px;
+        line-height: 1.8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="eyebrow">// calculadora gratuita</div>
+        <h1>CLT <span>→</span> PJ<br />Conversor</h1>
+        <p class="subtitle">
+          Descubra quanto cobrar como PJ para manter<br />o mesmo poder
+          aquisitivo do seu salário CLT.
+        </p>
+      </header>
+
+      <!-- AD SLOT TOPO -->
+      <div class="ad-slot">[ anúncio — 728×90 ]</div>
+
+      <div class="card">
+        <div class="card-title">// dados CLT</div>
+
+        <div class="field">
+          <label>Salário bruto mensal</label>
+          <div class="input-wrap">
+            <span class="prefix">R$</span>
+            <input
+              type="number"
+              id="salario"
+              placeholder="5000"
+              min="0"
+              step="100"
+            />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Dependentes (para IR)</label>
+          <div class="input-wrap">
+            <span class="prefix">#</span>
+            <input
+              type="number"
+              id="dependentes"
+              placeholder="0"
+              min="0"
+              max="20"
+              style="padding-left: 36px"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">// benefícios que recebia CLT</div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Vale Alimentação / Refeição</div>
+            <div class="toggle-hint">Inclui VA/VR no cálculo</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="va" checked />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Plano de Saúde</div>
+            <div class="toggle-hint">~R$ 600/mês estimado</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="saude" checked />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">FGTS</div>
+            <div class="toggle-hint">8% do salário bruto</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="fgts" checked />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Férias + 1/3</div>
+            <div class="toggle-hint">Equivalente mensal</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="ferias" checked />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">13º Salário</div>
+            <div class="toggle-hint">Equivalente mensal</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="decimo" checked />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <button class="btn" onclick="calcular()">Calcular →</button>
+
+      <div id="results">
+        <br />
+        <div class="result-hero">
+          <div class="label">Você precisa cobrar como PJ</div>
+          <div class="amount" id="res-pj">R$ —</div>
+          <div class="per">por mês (nota fiscal)</div>
+        </div>
+
+        <div class="breakdown">
+          <div class="breakdown-title">// composição do custo CLT</div>
+          <div class="breakdown-row">
+            <span class="name">Salário líquido CLT</span>
+            <span class="val pos" id="r-liquido">—</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="name">INSS (desconto)</span>
+            <span class="val neg" id="r-inss">—</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="name">IR (desconto)</span>
+            <span class="val neg" id="r-ir">—</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="name">FGTS (empregador)</span>
+            <span class="val pos" id="r-fgts">—</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="name">Férias + 1/3</span>
+            <span class="val pos" id="r-ferias">—</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="name">13º salário</span>
+            <span class="val pos" id="r-decimo">—</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="name">Plano de saúde</span>
+            <span class="val pos" id="r-saude">—</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="name">VA/VR estimado</span>
+            <span class="val pos" id="r-va">—</span>
+          </div>
+          <div class="breakdown-row total">
+            <span class="name">Custo total CLT</span>
+            <span class="val" id="r-total">—</span>
+          </div>
+        </div>
+
+        <div class="breakdown">
+          <div class="breakdown-title">// impostos PJ (simples nacional)</div>
+          <div class="breakdown-row">
+            <span class="name">ISS + IRPJ + demais (~12%)</span>
+            <span class="val neg" id="r-impostos">—</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="name">Contador (~R$ 200/mês)</span>
+            <span class="val neg">– R$ 200</span>
+          </div>
+          <div class="breakdown-row total">
+            <span class="name">💰 Nota fiscal sugerida</span>
+            <span class="val" id="r-nota">—</span>
+          </div>
+        </div>
+
+        <p class="note">
+          ⚠️ Cálculo baseado em estimativas de 2024. Alíquotas variam conforme
+          CNAE, faturamento anual e regime tributário. Consulte um contador para
+          valores exatos.
+        </p>
+
+        <!-- AD SLOT RESULTADO -->
+        <div class="ad-slot">[ anúncio — 336×280 ]</div>
+      </div>
+
+      <footer>
+        Calculadora CLT → PJ · Valores estimados · Não substitui assessoria
+        contábil
+      </footer>
+    </div>
+
+    <script>
+      // Tabela INSS 2024
+      function calcINSS(salario) {
+        const faixas = [
+          { ate: 1412.0, aliq: 0.075 },
+          { ate: 2666.68, aliq: 0.09 },
+          { ate: 4000.03, aliq: 0.12 },
+          { ate: 7786.02, aliq: 0.14 },
+        ];
+        let inss = 0,
+          base = salario;
+        let anterior = 0;
+        for (const f of faixas) {
+          if (salario <= 0) break;
+          const faixa = Math.min(salario, f.ate) - anterior;
+          if (faixa <= 0) break;
+          inss += faixa * f.aliq;
+          anterior = f.ate;
+          if (salario <= f.ate) break;
+        }
+        return Math.min(inss, 908.86); // teto 2024
+      }
+
+      // IR simplificado 2024
+      function calcIR(base, dependentes) {
+        const deducDep = dependentes * 189.59;
+        const baseCalc = Math.max(0, base - deducDep);
+        const faixas = [
+          { ate: 2259.2, aliq: 0, deducao: 0 },
+          { ate: 2826.65, aliq: 0.075, deducao: 169.44 },
+          { ate: 3751.05, aliq: 0.15, deducao: 381.44 },
+          { ate: 4664.68, aliq: 0.225, deducao: 662.77 },
+          { ate: Infinity, aliq: 0.275, deducao: 896.0 },
+        ];
+        for (const f of faixas) {
+          if (baseCalc <= f.ate) {
+            return Math.max(0, baseCalc * f.aliq - f.deducao);
+          }
+        }
+        return 0;
+      }
+
+      function fmt(v) {
+        return (
+          "R$ " +
+          v.toLocaleString("pt-BR", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })
+        );
+      }
+
+      function calcular() {
+        const salario =
+          parseFloat(document.getElementById("salario").value) || 0;
+        const dependentes =
+          parseInt(document.getElementById("dependentes").value) || 0;
+        const comFGTS = document.getElementById("fgts").checked;
+        const comFerias = document.getElementById("ferias").checked;
+        const comDecimo = document.getElementById("decimo").checked;
+        const comSaude = document.getElementById("saude").checked;
+        const comVA = document.getElementById("va").checked;
+
+        if (salario <= 0) {
+          alert("Informe o salário bruto.");
+          return;
+        }
+
+        const inss = calcINSS(salario);
+        const baseIR = salario - inss;
+        const ir = calcIR(baseIR, dependentes);
+        const liquido = salario - inss - ir;
+
+        const fgtsVal = comFGTS ? salario * 0.08 : 0;
+        const feriasVal = comFerias ? (salario / 12) * (1 + 1 / 3) : 0;
+        const decimoVal = comDecimo ? salario / 12 : 0;
+        const saudeVal = comSaude ? 600 : 0;
+        const vaVal = comVA ? 550 : 0;
+
+        const totalCLT =
+          liquido + fgtsVal + feriasVal + decimoVal + saudeVal + vaVal;
+
+        // PJ: precisa emitir nota que, após ~12% impostos e R$200 contador, sobre o totalCLT
+        const notaPJ = (totalCLT + 200) / (1 - 0.12);
+
+        // mostrar resultados
+        document.getElementById("r-liquido").textContent = fmt(liquido);
+        document.getElementById("r-inss").textContent = "– " + fmt(inss);
+        document.getElementById("r-ir").textContent = "– " + fmt(ir);
+        document.getElementById("r-fgts").textContent = comFGTS
+          ? "+ " + fmt(fgtsVal)
+          : "—";
+        document.getElementById("r-ferias").textContent = comFerias
+          ? "+ " + fmt(feriasVal)
+          : "—";
+        document.getElementById("r-decimo").textContent = comDecimo
+          ? "+ " + fmt(decimoVal)
+          : "—";
+        document.getElementById("r-saude").textContent = comSaude
+          ? "+ " + fmt(saudeVal)
+          : "—";
+        document.getElementById("r-va").textContent = comVA
+          ? "+ " + fmt(vaVal)
+          : "—";
+        document.getElementById("r-total").textContent = fmt(totalCLT);
+        document.getElementById("r-impostos").textContent =
+          "– " + fmt(notaPJ * 0.12);
+        document.getElementById("r-nota").textContent = fmt(notaPJ);
+        document.getElementById("res-pj").textContent = fmt(notaPJ);
+
+        const el = document.getElementById("results");
+        el.style.display = "block";
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    </script>
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5983595032067221"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>
